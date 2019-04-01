@@ -3,8 +3,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const app = express();
+// CONTROLLERS
+const todayFeeds = require("./src/controllers/todayFeeds");
+const feed = require("./src/controllers/feed")
 
-//// CONNECT TO DB ////
+// SERVICES
+
+// DATABASE
 mongoose
   .connect(
     process.env.DBURL,
