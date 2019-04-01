@@ -1,13 +1,25 @@
 require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const {
+    Validator,
+    ValidationError
+  } = require("express-json-validator-middleware");
+  
 
-const app = express();
 // CONTROLLERS
-const todayFeeds = require("./src/controllers/todayFeeds");
-const feed = require("./src/controllers/feed")
+const getDayFeeds = require("./src/controllers/getDayFeeds");
+const feed = require("./src/controllers/feed");
+
+
 
 // SERVICES
+
+
+
+const app = express();
+
 
 // DATABASE
 mongoose
@@ -28,6 +40,19 @@ mongoose
 //// TEST ENDPOINT ////
 app.get('/', function (req, res) {
     res.send('Hello World!');
+  });
+
+//ENDPOINTS
+app.use("/feed", feed);
+//app.use("/today", getDayFeeds);
+
+app.use(function(err, req, res, next) {
+    console.log(res.body);
+    if (err instanceof ValidationError) {
+      res.sendStatus(400);
+    } else {
+      res.sendStatus(500);
+    }
   });
 
 //// PORT LISTENER ////
