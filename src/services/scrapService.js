@@ -1,13 +1,11 @@
 const express = require("express");
-const router = express.Router();
 const Feed = require("../models/feed");
 const request = require("request");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 
-class scrapService {
+class ScrapService {
   constructor() {
-    this.news = [];
     this.url1 = "https://www.elmundo.es";
     this.url2 = "https://elpais.com";
   }
@@ -69,14 +67,12 @@ class scrapService {
               source,
               publisher: "EL PAÍS"
             };
-            this.news.push(feed);
             promises.push(Feed.create(feed));
           }
         });
-        console.log(this.news);
         Promise.all(promises)
           .then(() => {
-            console.log("Succesfully saved");
+            console.log(`${this.url2} Succesfully saved`);
           })
           .catch(e => console.log(e));
       }
@@ -145,14 +141,12 @@ class scrapService {
                 source,
                 publisher: "EL MUNDO"
               };
-              this.news.push(feed);
               promises.push(Feed.create(feed));
             }
           });
-          console.log(this.news);
           Promise.all(promises)
             .then(() => {
-              console.log("Succesfully saved");
+              console.log(`${this.url1} Succesfully saved`);
             })
             .catch(e => console.log(e));
         }
@@ -160,5 +154,9 @@ class scrapService {
     );
   }
 }
-
-module.exports = scrapService;
+module.exports = function(req, res) {
+  getMessages().then(messages => {
+    res.json(messages);
+  });
+};
+module.exports = new ScrapService();

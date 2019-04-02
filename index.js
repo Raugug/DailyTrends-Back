@@ -1,24 +1,27 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const {
-  Validator,
-  ValidationError
-} = require("express-json-validator-middleware");
-const scrapeIt = require("scrape-it");
+const CronJob = require("cron").CronJob;
+const { ValidationError } = require("express-json-validator-middleware");
 
 // CONTROLLERS
-const getDayFeeds = require("./src/controllers/getDayFeeds");
 const feed = require("./src/controllers/feed");
+const getDayFeeds = require("./src/controllers/getDayFeeds");
 
-// SERVICES
+// SERVICE
 const scrapService = require("./src/services/scrapService");
-const scrap = new scrapService();
-//scrap.get_pageEP();
-//scrap.get_pageEM();
+const startDate = new Date();
+
+//SERVICE JOB EVERY 6 HOURS
+const job = new CronJob("0 */6 * * *", () => {
+  scrapService.get_pageEP();
+  scrapService.get_pageEM();
+  let updateDate = new Date();
+  console.log("Updating feed at ", updateDate);
+});
 
 const app = express();
+const port = 3000;
 
 // DATABASE
 mongoose
@@ -27,21 +30,25 @@ mongoose
     console.log(
       `Connected to Mongo. Database name: "${x.connections[0].name}"`
     );
+    console.log("Start feed at ", startDate);
+    scrapService.get_pageEP();
+    scrapService.get_pageEM();
+    job.start();
   })
   .catch(err => {
     console.error("Error connecting to mongo", err);
   });
 
-//// TEST ENDPOINT ////
-app.get("/", function(req, res) {
-  res.send("Hello World!");
+// HOME
+app.get("/", (req, res) => {
+  res.send("Welcome to DailyTrends Service");
 });
 
-//ENDPOINTS
+// ENDPOINTS
 app.use("/feed", feed);
-//app.use("/today", getDayFeeds);
+app.use("/today", getDayFeeds);
 
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   console.log(res.body);
   if (err instanceof ValidationError) {
     res.sendStatus(400);
@@ -51,6 +58,4 @@ app.use(function(err, req, res, next) {
 });
 
 //// PORT LISTENER ////
-app.listen(3000, function() {
-  console.log("Server listening on port 3000");
-});
+app.listen(port, () => console.log(`DailyTrends started on PORT ${port}`));

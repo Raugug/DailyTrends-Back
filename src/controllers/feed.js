@@ -53,7 +53,6 @@ router.post(
 //READ
 router.get("/all", (req, res, next) => {
   Feed.find()
-    .sort({ date: 1, time: 1 })
     .then(feeds => res.send({ status: "OK", feeds }))
     .catch(e => console.log(e));
 });
